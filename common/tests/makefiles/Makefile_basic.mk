@@ -1,0 +1,6 @@
+COMPONENT_NAME=basic
+
+TEST_SRC_FILES = \
+  $(UNITTEST_SRC_DIR)/test_basic.cpp
+
+include $(CPPUTEST_MAKFILE_INFRA)

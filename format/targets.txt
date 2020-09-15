@@ -1,0 +1,3 @@
+common
+loopback/custom
+testApps/linux_serial

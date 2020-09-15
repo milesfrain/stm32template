@@ -1,0 +1,2 @@
+common/tests
+loopback/custom/tests

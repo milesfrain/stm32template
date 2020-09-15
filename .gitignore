@@ -1,0 +1,8 @@
+*/.mxproject
+*/Debug
+*/Release
+*/*.launch
+*/.settings
+.metadata
+RemoteSystemsTempFiles
+FreeRTOS_TAD_logs
