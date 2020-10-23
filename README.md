@@ -6,14 +6,18 @@ This repo demonstrates how to incorporate some best practices into STM32CubeIDE-
 - Code deduplication:
   - Linking to versioned vendor firmware
   - Common code shared across projects
-- Unit testing with CppUTest (not used extensively yet, [example](common/tests/src/test_basic.cpp))
+- Unit testing with [CppUTest](https://cpputest.github.io/) (not used extensively yet, [example](common/tests/src/test_basic.cpp))
 - Code coverage with lcov
-- Autoformatting with clang-format
+- Autoformatting with [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
 - ITM debug logging
 - FreeRTOS task profiling
 - High-performance UART and USB communication interface abstractions (see the [loopback](loopback) project)
 
-CI checks on each pull request ensure that all projects compile, pass unit tests, and are formatted correctly. Here are example PRs demonstrating a failing build, failing unit tests, incorrect formatting, and passing all checks.
+CI checks on each pull request ensure that all projects compile, pass unit tests, and are formatted correctly. Here are example PRs demonstrating:
+- [Broken build](https://github.com/milesfrain/stm32template/pull/2)
+- [Failing unit tests](https://github.com/milesfrain/stm32template/pull/3)
+- [Incorrect formatting](https://github.com/milesfrain/stm32template/pull/4)
+- [Passing all checks](https://github.com/milesfrain/stm32template/pull/5)
 
 ## Linux setup instructions
 
