@@ -41,7 +41,7 @@ uint32_t dmaFlagCheckAndClear(DMA_TypeDef* dma, uint32_t stream, DmaFlag flag)
     // Check flag
     uint32_t result = dma->HISR & mask;
     // Clear flag by writing a 1 to each bit to clear
-    dma->HIFCR = mask;
+    dma->HIFCR_OOPS = mask;
     // Return whether flag was set
     return result;
   }
