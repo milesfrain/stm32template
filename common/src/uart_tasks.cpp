@@ -25,7 +25,7 @@ void rxFuncWrapper(UartTasks* p);
 // Constructor
 UartTasks::UartTasks(const char* name, const UartInfo ui, UBaseType_t priority)
   : txTask{ concat(txName, name, "_tx", sizeof(rxName)), txFuncWrapper, this, priority }
-  , rxTask{ concat(rxName, name, "_rx", sizeof(rxName)), rxFuncWrapper, this, priority }
+    , rxTask{ concat(rxName, name, "_rx", sizeof(rxName)), rxFuncWrapper, this, priority }
   , ui{ ui }
 {}
 
@@ -193,13 +193,13 @@ void UartTasks::rxFunc()
   registerUartCallback(ui.uartNum, uartCallbackWrapper, this);
 
   // point to peripheral address to read from
-  LL_DMA_SetPeriphAddress(ui.dmaRxChReg, ui.dmaRxStream, (uint32_t)&ui.uartReg->DR);
+  LL_DMA_SetPeriphAddress(ui.dmaRxChReg,ui.dmaRxStream, (uint32_t)&ui.uartReg->DR);
 
   // point to memory address to write to
-  LL_DMA_SetMemoryAddress(ui.dmaRxChReg, ui.dmaRxStream, (uint32_t)rxDmaBuf);
+  LL_DMA_SetMemoryAddress(ui.dmaRxChReg, ui.dmaRxStream, ( uint32_t )rxDmaBuf);
 
   // setup size of memory destination
-  LL_DMA_SetDataLength(ui.dmaRxChReg, ui.dmaRxStream, sizeof(rxDmaBuf));
+	LL_DMA_SetDataLength(ui.dmaRxChReg, ui.dmaRxStream, sizeof(rxDmaBuf));
 
   // enable transfer-complete interrupt
   LL_DMA_EnableIT_TC(ui.dmaRxChReg, ui.dmaRxStream);
