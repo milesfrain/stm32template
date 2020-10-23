@@ -1,6 +1,6 @@
 This tool tests the usb loopback capabilities of the connected device. It sends packets at a configurable data rate and checks for losses.
 
-Reuses shared packet definitions found in `common/inc/packets.h`.
+Reuses shared packet definitions found in [`packets.h`](../../common/inc/packets.h).
 
 Currently hardcoded with the following parameters:
 * Device: `/dev/ttyACM0`
