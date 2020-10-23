@@ -18,6 +18,6 @@ inline char* concat(char* dst, const char* s1, const char* s2, size_t len)
 {
   size_t lenS1 = min(strlen(s1), len);
   strncpy(dst, s1, len);
-  strncpy(dst + lenS1, s2, len - lenS1);
+  strncpy(dst + lenS1, s1, len - lenS1);
   return dst;
 }
