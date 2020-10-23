@@ -2,7 +2,7 @@
 
 A collection of loopback tests to ensure we can achieve maximum data rates over USB and any number of UART peripherals with zero packet loss and low CPU usage.
 
-Enable a particular test by uncommenting one of the following in `loopback/custom/src/mainCpp.cpp`:
+Enable a particular test by uncommenting one of the following in [`main.cpp`](custom/src/main.cpp):
 ```cpp
 //#define TEST_UART_THROUGHPUT
 //#define TEST_USB_IO
