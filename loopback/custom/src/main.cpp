@@ -36,9 +36,9 @@
 // Define one of these for testing:
 //#define TEST_UART_THROUGHPUT
 //#define TEST_USB_IO
-//#define TEST_USB_LOOPBACK
+#define TEST_USB_LOOPBACK
 //#define TEST_USB_SINGLE_UART_LOOPBACK
-#define TEST_USB_ALL_UART_LOOPBACK
+//#define TEST_USB_ALL_UART_LOOPBACK
 
 // These functions are defined in C files.
 // This block lets us use those functions here.
@@ -65,7 +65,7 @@ int main(void)
   MX_UART9_Init();
   MX_TIM11_Init();
 
-  itmSendString("Starting...\r\n");
+  itmSendString("Starting USB-only loopback test...\r\n");
 
   // Create tasks
 
