@@ -147,15 +147,24 @@ Some .ioc settings to double check are:
 #### Convert to C++ (... didn't we already do this in the .ioc?)
 In the `Project Explorer`, right click on the active project and select `Convert to C++`.
 
+#### Create custom code directory
+Copy the `custom` directory over from the `loopback` example. Note that you'll likely need to right-click on your project in the `Project Explorer` and select `Refresh` for this new folder to appear.
+
 #### Link to common code
 In the `Project Explorer`, right click on the active project, `New > Folder > Advaced > Link to ...`, paste:
 ```
 WORKSPACE_LOC/common
 ```
 
+#### Exclude unit tests from build
+
+In the `Project Explorer`, right click on `custom / tests`, select `properties` then `C/C++ General > Paths and Symbols` and check `Exclude resource from build`, since we don't want the IDE to build our unit tests (those are instead run independently on the host machine).
+
+Repeat the same steps for excluding `common / tests`.
+
 #### Setup include and source paths
-`Project > Properties > C/C++ General`
-From `Configuration` dropdown select `All`
+`Project > Properties > C/C++ General > Paths and Symbols`
+From `Configuration` dropdown select `[All configurations]`
 In `Includes` tab, for languages `GNU C` and `GNU C++`, add these paths:
 ```
 custom/inc
