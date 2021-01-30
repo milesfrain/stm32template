@@ -17,7 +17,6 @@
   *
   ******************************************************************************
   */
-#if 0
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -88,8 +87,7 @@ void MX_USB_DEVICE_Init(void)
   }
 
   /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
-#endif // #if 0
-void unused(){ // workaround for autogen
+
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
 }
 

@@ -17,7 +17,6 @@
   *
   ******************************************************************************
   */
-#if 0
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -318,7 +317,7 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
-#endif // #if 0
+
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 
 /**
