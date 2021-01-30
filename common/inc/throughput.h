@@ -47,11 +47,11 @@ public:
 
 private:
   static void funcWrapper(Consumer* p) { p->func(); }
-  Readable& target;
-  StaticTask<Consumer> task;
-  uint8_t buf[consumerBufSize]; // storage for parsing
-  size_t len;                   // number of bytes in buffer
-  struct LogMsg msg;            // for logging
+  Readable& target;                                        // readable interface
+  StaticTask<Consumer, configMINIMAL_STACK_SIZE * 2> task; // local static task
+  uint8_t buf[consumerBufSize];                            // storage for parsing
+  size_t len;                                              // number of bytes in buffer
+  struct LogMsg msg;                                       // for logging
   uint32_t pktCt;
 };
 
