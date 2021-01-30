@@ -23,6 +23,7 @@
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "isr_callbacks.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,7 +62,7 @@ extern TIM_HandleTypeDef htim11;
 extern TIM_HandleTypeDef htim8;
 
 /* USER CODE BEGIN EV */
-
+extern volatile unsigned long ulHighFrequencyTimerTicks;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -167,6 +168,8 @@ void DMA1_Stream0_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream0_IRQn 0 */
 
+  handleDmaInterrupt(dmaCh1, dmaStream0);
+
   /* USER CODE END DMA1_Stream0_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Stream0_IRQn 1 */
@@ -180,6 +183,8 @@ void DMA1_Stream0_IRQHandler(void)
 void DMA1_Stream1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream1_IRQn 0 */
+
+  handleDmaInterrupt(dmaCh1, dmaStream1);
 
   /* USER CODE END DMA1_Stream1_IRQn 0 */
 
@@ -195,6 +200,8 @@ void DMA1_Stream2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream2_IRQn 0 */
 
+  handleDmaInterrupt(dmaCh1, dmaStream2);
+
   /* USER CODE END DMA1_Stream2_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Stream2_IRQn 1 */
@@ -208,6 +215,8 @@ void DMA1_Stream2_IRQHandler(void)
 void DMA1_Stream3_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream3_IRQn 0 */
+
+  handleDmaInterrupt(dmaCh1, dmaStream3);
 
   /* USER CODE END DMA1_Stream3_IRQn 0 */
 
@@ -223,6 +232,8 @@ void DMA1_Stream4_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream4_IRQn 0 */
 
+  handleDmaInterrupt(dmaCh1, dmaStream4);
+
   /* USER CODE END DMA1_Stream4_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Stream4_IRQn 1 */
@@ -236,6 +247,8 @@ void DMA1_Stream4_IRQHandler(void)
 void TIM1_TRG_COM_TIM11_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 0 */
+
+  ulHighFrequencyTimerTicks++;
 
   /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 0 */
   HAL_TIM_IRQHandler(&htim11);
@@ -265,6 +278,8 @@ void DMA1_Stream7_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream7_IRQn 0 */
 
+  handleDmaInterrupt(dmaCh1, dmaStream7);
+
   /* USER CODE END DMA1_Stream7_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Stream7_IRQn 1 */
@@ -279,6 +294,8 @@ void UART4_IRQHandler(void)
 {
   /* USER CODE BEGIN UART4_IRQn 0 */
 
+  handleUartInterrupt(uart4);
+
   /* USER CODE END UART4_IRQn 0 */
   /* USER CODE BEGIN UART4_IRQn 1 */
 
@@ -292,6 +309,8 @@ void UART5_IRQHandler(void)
 {
   /* USER CODE BEGIN UART5_IRQn 0 */
 
+  handleUartInterrupt(uart5);
+
   /* USER CODE END UART5_IRQn 0 */
   /* USER CODE BEGIN UART5_IRQn 1 */
 
@@ -304,6 +323,8 @@ void UART5_IRQHandler(void)
 void DMA2_Stream0_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
+
+  handleDmaInterrupt(dmaCh2, dmaStream0);
 
   /* USER CODE END DMA2_Stream0_IRQn 0 */
 
@@ -333,6 +354,8 @@ void DMA2_Stream7_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream7_IRQn 0 */
 
+  handleDmaInterrupt(dmaCh2, dmaStream7);
+
   /* USER CODE END DMA2_Stream7_IRQn 0 */
 
   /* USER CODE BEGIN DMA2_Stream7_IRQn 1 */
@@ -347,6 +370,8 @@ void UART7_IRQHandler(void)
 {
   /* USER CODE BEGIN UART7_IRQn 0 */
 
+  handleUartInterrupt(uart7);
+
   /* USER CODE END UART7_IRQn 0 */
   /* USER CODE BEGIN UART7_IRQn 1 */
 
@@ -359,6 +384,8 @@ void UART7_IRQHandler(void)
 void UART9_IRQHandler(void)
 {
   /* USER CODE BEGIN UART9_IRQn 0 */
+
+  handleUartInterrupt(uart9);
 
   /* USER CODE END UART9_IRQn 0 */
   /* USER CODE BEGIN UART9_IRQn 1 */

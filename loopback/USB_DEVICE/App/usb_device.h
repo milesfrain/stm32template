@@ -17,6 +17,7 @@
   *
   ******************************************************************************
   */
+#if 0
 /* USER CODE END Header */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -82,7 +83,7 @@ void MX_USB_DEVICE_Init(void);
  * -- Insert functions declaration here --
  */
 /* USER CODE BEGIN FD */
-
+#endif // workaround for #if 0 above. Actually matches the header guard
 /* USER CODE END FD */
 /**
   * @}
