@@ -1,22 +1,22 @@
 From c2e5cb30868793c8f3d2bad216c8ff9c8140c024 Mon Sep 17 00:00:00 2001
 From: Miles Frain <miles.frain@colorado.edu>
 Date: Fri, 29 Jan 2021 18:11:56 -0800
-Subject: [PATCH] Re-apply loopback customizations
+Subject: [PATCH] Re-apply other_project customizations
 
 ---
- loopback/Core/Src/freertos.c          | 16 +++++++++++++++
- loopback/Core/Src/main.c              |  1 +
- loopback/Core/Src/stm32f4xx_it.c      | 29 ++++++++++++++++++++++++++-
- loopback/USB_DEVICE/App/usb_device.c  |  4 +++-
- loopback/USB_DEVICE/App/usb_device.h  |  3 ++-
- loopback/USB_DEVICE/App/usbd_cdc_if.c |  3 ++-
- loopback/USB_DEVICE/App/usbd_cdc_if.h |  1 +
+ other_project/Core/Src/freertos.c          | 16 +++++++++++++++
+ other_project/Core/Src/main.c              |  1 +
+ other_project/Core/Src/stm32f4xx_it.c      | 29 ++++++++++++++++++++++++++-
+ other_project/USB_DEVICE/App/usb_device.c  |  4 +++-
+ other_project/USB_DEVICE/App/usb_device.h  |  3 ++-
+ other_project/USB_DEVICE/App/usbd_cdc_if.c |  3 ++-
+ other_project/USB_DEVICE/App/usbd_cdc_if.h |  1 +
  7 files changed, 53 insertions(+), 4 deletions(-)
 
-diff --git a/loopback/Core/Src/freertos.c b/loopback/Core/Src/freertos.c
+diff --git a/other_project/Core/Src/freertos.c b/other_project/Core/Src/freertos.c
 index f1a638f..4f98ef7 100644
---- a/loopback/Core/Src/freertos.c
-+++ b/loopback/Core/Src/freertos.c
+--- a/other_project/Core/Src/freertos.c
++++ b/other_project/Core/Src/freertos.c
 @@ -47,6 +47,7 @@
  /* Private variables ---------------------------------------------------------*/
  /* USER CODE BEGIN Variables */
@@ -69,10 +69,10 @@ index f1a638f..4f98ef7 100644
  
  /* USER CODE END Application */
  
-diff --git a/loopback/Core/Src/main.c b/loopback/Core/Src/main.c
+diff --git a/other_project/Core/Src/main.c b/other_project/Core/Src/main.c
 index aa1c6ea..80b15fe 100644
---- a/loopback/Core/Src/main.c
-+++ b/loopback/Core/Src/main.c
+--- a/other_project/Core/Src/main.c
++++ b/other_project/Core/Src/main.c
 @@ -152,6 +152,7 @@ void Error_Handler(void)
  {
    /* USER CODE BEGIN Error_Handler_Debug */
@@ -81,10 +81,10 @@ index aa1c6ea..80b15fe 100644
  
    /* USER CODE END Error_Handler_Debug */
  }
-diff --git a/loopback/Core/Src/stm32f4xx_it.c b/loopback/Core/Src/stm32f4xx_it.c
+diff --git a/other_project/Core/Src/stm32f4xx_it.c b/other_project/Core/Src/stm32f4xx_it.c
 index 3782f2b..ce02176 100644
---- a/loopback/Core/Src/stm32f4xx_it.c
-+++ b/loopback/Core/Src/stm32f4xx_it.c
+--- a/other_project/Core/Src/stm32f4xx_it.c
++++ b/other_project/Core/Src/stm32f4xx_it.c
 @@ -23,6 +23,7 @@
  #include "stm32f4xx_it.h"
  /* Private includes ----------------------------------------------------------*/
@@ -219,10 +219,10 @@ index 3782f2b..ce02176 100644
    /* USER CODE END UART9_IRQn 0 */
    /* USER CODE BEGIN UART9_IRQn 1 */
  
-diff --git a/loopback/USB_DEVICE/App/usb_device.c b/loopback/USB_DEVICE/App/usb_device.c
+diff --git a/other_project/USB_DEVICE/App/usb_device.c b/other_project/USB_DEVICE/App/usb_device.c
 index 63bf450..5c238ad 100644
---- a/loopback/USB_DEVICE/App/usb_device.c
-+++ b/loopback/USB_DEVICE/App/usb_device.c
+--- a/other_project/USB_DEVICE/App/usb_device.c
++++ b/other_project/USB_DEVICE/App/usb_device.c
 @@ -17,6 +17,7 @@
    *
    ******************************************************************************
@@ -241,10 +241,10 @@ index 63bf450..5c238ad 100644
    /* USER CODE END USB_DEVICE_Init_PostTreatment */
  }
  
-diff --git a/loopback/USB_DEVICE/App/usb_device.h b/loopback/USB_DEVICE/App/usb_device.h
+diff --git a/other_project/USB_DEVICE/App/usb_device.h b/other_project/USB_DEVICE/App/usb_device.h
 index cee197c..fe254a0 100644
---- a/loopback/USB_DEVICE/App/usb_device.h
-+++ b/loopback/USB_DEVICE/App/usb_device.h
+--- a/other_project/USB_DEVICE/App/usb_device.h
++++ b/other_project/USB_DEVICE/App/usb_device.h
 @@ -17,6 +17,7 @@
    *
    ******************************************************************************
@@ -262,10 +262,10 @@ index cee197c..fe254a0 100644
  /* USER CODE END FD */
  /**
    * @}
-diff --git a/loopback/USB_DEVICE/App/usbd_cdc_if.c b/loopback/USB_DEVICE/App/usbd_cdc_if.c
+diff --git a/other_project/USB_DEVICE/App/usbd_cdc_if.c b/other_project/USB_DEVICE/App/usbd_cdc_if.c
 index 22a2093..2f48d8f 100644
---- a/loopback/USB_DEVICE/App/usbd_cdc_if.c
-+++ b/loopback/USB_DEVICE/App/usbd_cdc_if.c
+--- a/other_project/USB_DEVICE/App/usbd_cdc_if.c
++++ b/other_project/USB_DEVICE/App/usbd_cdc_if.c
 @@ -17,6 +17,7 @@
    *
    ******************************************************************************
@@ -283,10 +283,10 @@ index 22a2093..2f48d8f 100644
  /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
  
  /**
-diff --git a/loopback/USB_DEVICE/App/usbd_cdc_if.h b/loopback/USB_DEVICE/App/usbd_cdc_if.h
+diff --git a/other_project/USB_DEVICE/App/usbd_cdc_if.h b/other_project/USB_DEVICE/App/usbd_cdc_if.h
 index 9378185..d00c45c 100644
---- a/loopback/USB_DEVICE/App/usbd_cdc_if.h
-+++ b/loopback/USB_DEVICE/App/usbd_cdc_if.h
+--- a/other_project/USB_DEVICE/App/usbd_cdc_if.h
++++ b/other_project/USB_DEVICE/App/usbd_cdc_if.h
 @@ -17,6 +17,7 @@
    *
    ******************************************************************************
