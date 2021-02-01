@@ -10,7 +10,7 @@ set -x
 format_ret=$?
 
 # Run build
-/opt/st/stm32cubeide_1.4.0/stm32cubeide --launcher.suppressErrors -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data . -importAll . -build all -no-indexer
+~/st/stm32cubeide/stm32cubeide --launcher.suppressErrors -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -data . -importAll . -build all -no-indexer
 build_ret=$?
 
 # Check unit tests and code coverage
