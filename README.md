@@ -34,6 +34,11 @@ sh st-stm32cubeide_1.4.0_7511_20200720_0928_amd64.sh
 ```
 Note that `ctrl-C` will let you jump to the bottom of the licenses.
 
+When updating the IDE, it will continue to use the original install path. So rather than requiring constant path editing or full IDE reinstalls for CI script compatibility, we're using a versionless symlinked path. Set up that symlink by running (substitue `1.5.1` for your particular IDE version):
+```
+ln -frs ~/st/stm32cubeide_1.5.1 ~/st/stm32cubeide
+```
+
 Download ST-Link Server from:
 https://www.st.com/en/development-tools/st-link-server.html
 
@@ -249,6 +254,8 @@ If you'd like to automatically fix these formatting mismatches, run:
 ```
 format/do.sh
 ```
+
+Autoformatting in eclipse/stm32cubeIDE that is close to (but not exactly the same as) the `.clang-format` config, you can import `format/eclipse_formatting.xml` into `Window > Preferences > C/C++ > Code Style > Formatter > Import`.
 
 Note that we're only autoformatting code that is 100% user-created, so we're not constantly fighting with ST's autogeneration tools. You can add new directories to track to `format/targets.txt`.
 
