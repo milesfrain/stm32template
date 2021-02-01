@@ -164,7 +164,7 @@ WORKSPACE_LOC/common
 
 #### Exclude unit tests from build
 
-In the `Project Explorer`, right click on `custom / tests`, select `properties` then `C/C++ General > Paths and Symbols` and check `Exclude resource from build`, since we don't want the IDE to build our unit tests (those are instead run independently on the host machine).
+In the `Project Explorer`, right click on `custom / tests`, select `properties` then `C/C++ General > Paths and Symbols`, select `[All configurations]` from the `Configuration` dropdown, and check `Exclude resource from build`. We don't want the IDE to build our unit tests (those are instead run independently on the host machine).
 
 Repeat the same steps for excluding `common / tests`.
 
