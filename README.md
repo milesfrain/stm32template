@@ -34,9 +34,10 @@ sh st-stm32cubeide_1.4.0_7511_20200720_0928_amd64.sh
 ```
 Note that `ctrl-C` will let you jump to the bottom of the licenses.
 
-When updating the IDE, it will continue to use the original install path. So rather than requiring constant path editing or full IDE reinstalls for CI script compatibility, we're using a versionless symlinked path. Set up that symlink by running (substitue `1.5.1` for your particular IDE version):
+When updating the IDE, it will continue to use the original install path. So rather than requiring constant path editing or full IDE reinstalls for CI script compatibility, we're using a versionless symlinked path that's also compatible with the docker image directory structure. Set up that symlink by running (substitue `1.5.1` for your particular IDE version):
 ```
-ln -frs ~/st/stm32cubeide_1.5.1 ~/st/stm32cubeide
+sudo mkdir /opt/st
+sudo ln -frs ~/st/stm32cubeide_1.5.1 /opt/st/stm32cubeide
 ```
 
 Download ST-Link Server from:
