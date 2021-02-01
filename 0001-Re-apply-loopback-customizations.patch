@@ -1,0 +1,300 @@
+From c2e5cb30868793c8f3d2bad216c8ff9c8140c024 Mon Sep 17 00:00:00 2001
+From: Miles Frain <miles.frain@colorado.edu>
+Date: Fri, 29 Jan 2021 18:11:56 -0800
+Subject: [PATCH] Re-apply loopback customizations
+
+---
+ loopback/Core/Src/freertos.c          | 16 +++++++++++++++
+ loopback/Core/Src/main.c              |  1 +
+ loopback/Core/Src/stm32f4xx_it.c      | 29 ++++++++++++++++++++++++++-
+ loopback/USB_DEVICE/App/usb_device.c  |  4 +++-
+ loopback/USB_DEVICE/App/usb_device.h  |  3 ++-
+ loopback/USB_DEVICE/App/usbd_cdc_if.c |  3 ++-
+ loopback/USB_DEVICE/App/usbd_cdc_if.h |  1 +
+ 7 files changed, 53 insertions(+), 4 deletions(-)
+
+diff --git a/loopback/Core/Src/freertos.c b/loopback/Core/Src/freertos.c
+index f1a638f..4f98ef7 100644
+--- a/loopback/Core/Src/freertos.c
++++ b/loopback/Core/Src/freertos.c
+@@ -47,6 +47,7 @@
+ /* Private variables ---------------------------------------------------------*/
+ /* USER CODE BEGIN Variables */
+ 
++#if 0
+ /* USER CODE END Variables */
+ osThreadId defaultTaskHandle;
+ uint32_t defaultTaskBuffer[ 128 ];
+@@ -54,7 +55,9 @@ osStaticThreadDef_t defaultTaskControlBlock;
+ 
+ /* Private function prototypes -----------------------------------------------*/
+ /* USER CODE BEGIN FunctionPrototypes */
++#endif
+ 
++#if 0
+ /* USER CODE END FunctionPrototypes */
+ 
+ void StartDefaultTask(void const * argument);
+@@ -69,6 +72,15 @@ void configureTimerForRunTimeStats(void);
+ unsigned long getRunTimeCounterValue(void);
+ 
+ /* USER CODE BEGIN 1 */
++#endif
++// copy from above
++/* GetIdleTaskMemory prototype (linked to static allocation support) */
++void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
++
++/* Hook prototypes */
++void configureTimerForRunTimeStats(void);
++unsigned long getRunTimeCounterValue(void);
++
+ /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
+ __weak void configureTimerForRunTimeStats(void)
+ {
+@@ -92,6 +104,9 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
+   *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+   /* place for user code */
+ }
++
++// eliminate freertos default task
++#if 0
+ /* USER CODE END GET_IDLE_TASK_MEMORY */
+ 
+ /**
+@@ -151,6 +166,7 @@ void StartDefaultTask(void const * argument)
+ 
+ /* Private application code --------------------------------------------------*/
+ /* USER CODE BEGIN Application */
++#endif
+ 
+ /* USER CODE END Application */
+ 
+diff --git a/loopback/Core/Src/main.c b/loopback/Core/Src/main.c
+index aa1c6ea..80b15fe 100644
+--- a/loopback/Core/Src/main.c
++++ b/loopback/Core/Src/main.c
+@@ -152,6 +152,7 @@ void Error_Handler(void)
+ {
+   /* USER CODE BEGIN Error_Handler_Debug */
+   /* User can add his own implementation to report the HAL error return state */
++  while(1);
+ 
+   /* USER CODE END Error_Handler_Debug */
+ }
+diff --git a/loopback/Core/Src/stm32f4xx_it.c b/loopback/Core/Src/stm32f4xx_it.c
+index 3782f2b..ce02176 100644
+--- a/loopback/Core/Src/stm32f4xx_it.c
++++ b/loopback/Core/Src/stm32f4xx_it.c
+@@ -23,6 +23,7 @@
+ #include "stm32f4xx_it.h"
+ /* Private includes ----------------------------------------------------------*/
+ /* USER CODE BEGIN Includes */
++#include "isr_callbacks.h"
+ /* USER CODE END Includes */
+ 
+ /* Private typedef -----------------------------------------------------------*/
+@@ -61,7 +62,7 @@ extern TIM_HandleTypeDef htim11;
+ extern TIM_HandleTypeDef htim8;
+ 
+ /* USER CODE BEGIN EV */
+-
++extern volatile unsigned long ulHighFrequencyTimerTicks;
+ /* USER CODE END EV */
+ 
+ /******************************************************************************/
+@@ -167,6 +168,8 @@ void DMA1_Stream0_IRQHandler(void)
+ {
+   /* USER CODE BEGIN DMA1_Stream0_IRQn 0 */
+ 
++  handleDmaInterrupt(dmaCh1, dmaStream0);
++
+   /* USER CODE END DMA1_Stream0_IRQn 0 */
+ 
+   /* USER CODE BEGIN DMA1_Stream0_IRQn 1 */
+@@ -181,6 +184,8 @@ void DMA1_Stream1_IRQHandler(void)
+ {
+   /* USER CODE BEGIN DMA1_Stream1_IRQn 0 */
+ 
++  handleDmaInterrupt(dmaCh1, dmaStream1);
++
+   /* USER CODE END DMA1_Stream1_IRQn 0 */
+ 
+   /* USER CODE BEGIN DMA1_Stream1_IRQn 1 */
+@@ -195,6 +200,8 @@ void DMA1_Stream2_IRQHandler(void)
+ {
+   /* USER CODE BEGIN DMA1_Stream2_IRQn 0 */
+ 
++  handleDmaInterrupt(dmaCh1, dmaStream2);
++
+   /* USER CODE END DMA1_Stream2_IRQn 0 */
+ 
+   /* USER CODE BEGIN DMA1_Stream2_IRQn 1 */
+@@ -209,6 +216,8 @@ void DMA1_Stream3_IRQHandler(void)
+ {
+   /* USER CODE BEGIN DMA1_Stream3_IRQn 0 */
+ 
++  handleDmaInterrupt(dmaCh1, dmaStream3);
++
+   /* USER CODE END DMA1_Stream3_IRQn 0 */
+ 
+   /* USER CODE BEGIN DMA1_Stream3_IRQn 1 */
+@@ -223,6 +232,8 @@ void DMA1_Stream4_IRQHandler(void)
+ {
+   /* USER CODE BEGIN DMA1_Stream4_IRQn 0 */
+ 
++  handleDmaInterrupt(dmaCh1, dmaStream4);
++
+   /* USER CODE END DMA1_Stream4_IRQn 0 */
+ 
+   /* USER CODE BEGIN DMA1_Stream4_IRQn 1 */
+@@ -237,6 +248,8 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void)
+ {
+   /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 0 */
+ 
++  ulHighFrequencyTimerTicks++;
++
+   /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 0 */
+   HAL_TIM_IRQHandler(&htim11);
+   /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 1 */
+@@ -265,6 +278,8 @@ void DMA1_Stream7_IRQHandler(void)
+ {
+   /* USER CODE BEGIN DMA1_Stream7_IRQn 0 */
+ 
++  handleDmaInterrupt(dmaCh1, dmaStream7);
++
+   /* USER CODE END DMA1_Stream7_IRQn 0 */
+ 
+   /* USER CODE BEGIN DMA1_Stream7_IRQn 1 */
+@@ -279,6 +294,8 @@ void UART4_IRQHandler(void)
+ {
+   /* USER CODE BEGIN UART4_IRQn 0 */
+ 
++  handleUartInterrupt(uart4);
++
+   /* USER CODE END UART4_IRQn 0 */
+   /* USER CODE BEGIN UART4_IRQn 1 */
+ 
+@@ -292,6 +309,8 @@ void UART5_IRQHandler(void)
+ {
+   /* USER CODE BEGIN UART5_IRQn 0 */
+ 
++  handleUartInterrupt(uart5);
++
+   /* USER CODE END UART5_IRQn 0 */
+   /* USER CODE BEGIN UART5_IRQn 1 */
+ 
+@@ -305,6 +324,8 @@ void DMA2_Stream0_IRQHandler(void)
+ {
+   /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
+ 
++  handleDmaInterrupt(dmaCh2, dmaStream0);
++
+   /* USER CODE END DMA2_Stream0_IRQn 0 */
+ 
+   /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
+@@ -333,6 +354,8 @@ void DMA2_Stream7_IRQHandler(void)
+ {
+   /* USER CODE BEGIN DMA2_Stream7_IRQn 0 */
+ 
++  handleDmaInterrupt(dmaCh2, dmaStream7);
++
+   /* USER CODE END DMA2_Stream7_IRQn 0 */
+ 
+   /* USER CODE BEGIN DMA2_Stream7_IRQn 1 */
+@@ -347,6 +370,8 @@ void UART7_IRQHandler(void)
+ {
+   /* USER CODE BEGIN UART7_IRQn 0 */
+ 
++  handleUartInterrupt(uart7);
++
+   /* USER CODE END UART7_IRQn 0 */
+   /* USER CODE BEGIN UART7_IRQn 1 */
+ 
+@@ -360,6 +385,8 @@ void UART9_IRQHandler(void)
+ {
+   /* USER CODE BEGIN UART9_IRQn 0 */
+ 
++  handleUartInterrupt(uart9);
++
+   /* USER CODE END UART9_IRQn 0 */
+   /* USER CODE BEGIN UART9_IRQn 1 */
+ 
+diff --git a/loopback/USB_DEVICE/App/usb_device.c b/loopback/USB_DEVICE/App/usb_device.c
+index 63bf450..5c238ad 100644
+--- a/loopback/USB_DEVICE/App/usb_device.c
++++ b/loopback/USB_DEVICE/App/usb_device.c
+@@ -17,6 +17,7 @@
+   *
+   ******************************************************************************
+   */
++#if 0
+ /* USER CODE END Header */
+ 
+ /* Includes ------------------------------------------------------------------*/
+@@ -87,7 +88,8 @@ void MX_USB_DEVICE_Init(void)
+   }
+ 
+   /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
+-
++#endif // #if 0
++void unused(){ // workaround for autogen
+   /* USER CODE END USB_DEVICE_Init_PostTreatment */
+ }
+ 
+diff --git a/loopback/USB_DEVICE/App/usb_device.h b/loopback/USB_DEVICE/App/usb_device.h
+index cee197c..fe254a0 100644
+--- a/loopback/USB_DEVICE/App/usb_device.h
++++ b/loopback/USB_DEVICE/App/usb_device.h
+@@ -17,6 +17,7 @@
+   *
+   ******************************************************************************
+   */
++#if 0
+ /* USER CODE END Header */
+ 
+ /* Define to prevent recursive inclusion -------------------------------------*/
+@@ -82,7 +83,7 @@ void MX_USB_DEVICE_Init(void);
+  * -- Insert functions declaration here --
+  */
+ /* USER CODE BEGIN FD */
+-
++#endif // workaround for #if 0 above. Actually matches the header guard
+ /* USER CODE END FD */
+ /**
+   * @}
+diff --git a/loopback/USB_DEVICE/App/usbd_cdc_if.c b/loopback/USB_DEVICE/App/usbd_cdc_if.c
+index 22a2093..2f48d8f 100644
+--- a/loopback/USB_DEVICE/App/usbd_cdc_if.c
++++ b/loopback/USB_DEVICE/App/usbd_cdc_if.c
+@@ -17,6 +17,7 @@
+   *
+   ******************************************************************************
+   */
++#if 0
+ /* USER CODE END Header */
+ 
+ /* Includes ------------------------------------------------------------------*/
+@@ -317,7 +318,7 @@ static int8_t CDC_TransmitCplt_FS(uint8_t *Buf, uint32_t *Len, uint8_t epnum)
+ }
+ 
+ /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+-
++#endif // #if 0
+ /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
+ 
+ /**
+diff --git a/loopback/USB_DEVICE/App/usbd_cdc_if.h b/loopback/USB_DEVICE/App/usbd_cdc_if.h
+index 9378185..d00c45c 100644
+--- a/loopback/USB_DEVICE/App/usbd_cdc_if.h
++++ b/loopback/USB_DEVICE/App/usbd_cdc_if.h
+@@ -17,6 +17,7 @@
+   *
+   ******************************************************************************
+   */
++#if 0
+ /* USER CODE END Header */
+ 
+ /* Define to prevent recursive inclusion -------------------------------------*/
+-- 
+2.25.1
+
