@@ -8,5 +8,5 @@ jobs:
     - uses: actions/checkout@v2
     - name: CI action step for stm32
       id: stm32ci
-      uses: milesfrain/stm32-action@v0.5
+      uses: milesfrain/stm32-action@F4_V1.25.2
 
