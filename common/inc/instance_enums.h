@@ -18,11 +18,11 @@ extern "C"
   // but safer, easier, and faster to use an enum
 
   // Using C-friendly enums (not scoped C++ enums) for use in C isr code.
-  enum DmaCh
+  enum DmaInstance
   {
-    dmaCh1, // one-based index, but letting be zero for array access
-    dmaCh2,
-    numDmaCh
+    dma1, // one-based index, but letting be zero for array access
+    dma2,
+    numDmaInstance
   };
 
   enum DmaStream
@@ -61,13 +61,13 @@ extern "C"
 // This section is only compatible with C++
 
 #ifdef __cplusplus
-// Helper function to convert DMA channel enum to register def
-constexpr DMA_TypeDef* getDmaChReg(enum DmaCh ch)
+// Helper function to convert DMA instance enum to register def
+constexpr DMA_TypeDef* getDmaReg(enum DmaInstance inst)
 {
-  switch (ch) {
-    case dmaCh1: return DMA1;
-    case dmaCh2: return DMA2;
-    case numDmaCh: return DMA2; // to suppress compiler warning
+  switch (inst) {
+    case dma1: return DMA1;
+    case dma2: return DMA2;
+    case numDmaInstance: return DMA2; // to suppress compiler warning
   }
   return DMA2; // to suppress compiler warning
 }

@@ -9,23 +9,23 @@
 class UartInfo
 {
 public:
-  UartInfo(Uart uartNum, DmaCh dmaTxChNum, DmaStream dmaTxStream, DmaCh dmaRxChNum, DmaStream dmaRxStream)
+  UartInfo(Uart uartNum, DmaInstance dmaTxInstNum, DmaStream dmaTxStream, DmaInstance dmaRxInstNum, DmaStream dmaRxStream)
     : uartNum{ uartNum }
     , uartReg{ getUartReg(uartNum) }
-    , dmaTxChNum{ dmaTxChNum }
-    , dmaTxChReg{ getDmaChReg(dmaTxChNum) }
+    , dmaTxInstNum{ dmaTxInstNum }
+    , dmaTxReg{ getDmaReg(dmaTxInstNum) }
     , dmaTxStream{ dmaTxStream }
-    , dmaRxChNum{ dmaRxChNum }
-    , dmaRxChReg{ getDmaChReg(dmaRxChNum) }
+    , dmaRxInstNum{ dmaRxInstNum }
+    , dmaRxReg{ getDmaReg(dmaRxInstNum) }
     , dmaRxStream{ dmaRxStream }
   {}
   Uart uartNum;
   USART_TypeDef* uartReg;
-  DmaCh dmaTxChNum;
-  DMA_TypeDef* dmaTxChReg;
+  DmaInstance dmaTxInstNum;
+  DMA_TypeDef* dmaTxReg;
   DmaStream dmaTxStream;
-  DmaCh dmaRxChNum;
-  DMA_TypeDef* dmaRxChReg;
+  DmaInstance dmaRxInstNum;
+  DMA_TypeDef* dmaRxReg;
   DmaStream dmaRxStream;
 };
 
@@ -33,11 +33,11 @@ public:
 // so these ifdefs will force the developer to double-check things when
 // changing hardware.
 #if defined(STM32F413xx)
-const UartInfo uartInfo4(uart4, dmaCh1, dmaStream4, dmaCh1, dmaStream2);
-const UartInfo uartInfo5(uart5, dmaCh1, dmaStream7, dmaCh1, dmaStream0); // uart 5 rx and uart 8 tx conflict on dma1 stream 0
-const UartInfo uartInfo7(uart7, dmaCh1, dmaStream1, dmaCh1, dmaStream3);
-const UartInfo uartInfo8(uart8, dmaCh1, dmaStream0, dmaCh1, dmaStream6); // uart 5 rx and uart 8 tx conflict on dma1 stream 0
-const UartInfo uartInfo9(uart9, dmaCh2, dmaStream0, dmaCh2, dmaStream7);
+const UartInfo uartInfo4(uart4, dma1, dmaStream4, dma1, dmaStream2);
+const UartInfo uartInfo5(uart5, dma1, dmaStream7, dma1, dmaStream0); // uart 5 rx and uart 8 tx conflict on dma1 stream 0
+const UartInfo uartInfo7(uart7, dma1, dmaStream1, dma1, dmaStream3);
+const UartInfo uartInfo8(uart8, dma1, dmaStream0, dma1, dmaStream6); // uart 5 rx and uart 8 tx conflict on dma1 stream 0
+const UartInfo uartInfo9(uart9, dma2, dmaStream0, dma2, dmaStream7);
 // Note - add more as needed
 #elif defined(STM32F423xx)
 // definitions for other chips

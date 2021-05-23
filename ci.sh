@@ -17,6 +17,12 @@ build_ret=$?
 ./unit.sh
 unit_ret=$?
 
+# build host apps
+pushd host_apps;
+make
+host_apps_ret=$?
+popd
+
 # disable echo for summaries
 set +x
 
@@ -24,6 +30,7 @@ set +x
 echo format return $format_ret
 echo build return $build_ret
 echo unit test return $unit_ret
+echo host apps return $host_apps_ret
 
 status=$((format_ret || build_ret || unit_ret))
 echo exit status $status

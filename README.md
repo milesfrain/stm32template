@@ -1,23 +1,30 @@
 ## Overview
 
-This repo demonstrates how to incorporate some best practices into STM32CubeIDE-based projects. It preserves ST's .ioc workflow with autogeneration and easy pin reconfiguration in a git-friendly way, and also showcases:
+This repo demonstrates a strategy for working with STM32CubeIDE-based projects. It preserves ST's .ioc workflow with autogeneration and easy pin reconfiguration in a git-friendly way, and also showcases:
 - C++ used appropriately in a constrained embedded environment (no dynamic allocations - see [no_new.cpp](common/src/no_new.cpp)).
 - Convenience wrappers for static allocation of FreeRTOS components (see [static_rtos.h](common/inc/static_rtos.h))
 - Code deduplication:
   - Linking to versioned vendor firmware
   - Common code shared across projects
-- Unit testing with [CppUTest](https://cpputest.github.io/) (not used extensively yet, [example](common/tests/src/test_basic.cpp))
+- Unit testing with [CppUTest](https://cpputest.github.io/) ([example](common/tests/src/test_software_crc.cpp))
 - Code coverage with lcov
 - Autoformatting with [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
 - ITM debug logging
 - FreeRTOS task profiling
-- High-performance UART and USB communication interface abstractions (see the [loopback](loopback) project)
+- High-performance UART and USB peripheral abstractions (see the [loopback](loopback) project)
 
 CI checks on each pull request ensure that all projects compile, pass unit tests, and are formatted correctly. Here are example PRs demonstrating:
 - [Broken build](https://github.com/milesfrain/stm32template/pull/2)
 - [Failing unit tests](https://github.com/milesfrain/stm32template/pull/3)
 - [Incorrect formatting](https://github.com/milesfrain/stm32template/pull/4)
 - [Passing all checks](https://github.com/milesfrain/stm32template/pull/5)
+
+## Projects
+
+- [`common`](common) - Common code shared among all projects.
+- [`loopback`](loopback) - Demonstrates sending binary packets across USB and UART peripherals.
+- [`vfd_bench`](vfd_bench) - A more real-world project demonstrating control of VFDs (variable-frequency drives) via modbus commands.
+- [`host_apps`](host_apps) - Applications which run on the host PC for communicating with the target microcontroller.
 
 ## Linux setup instructions
 
@@ -34,7 +41,7 @@ sh st-stm32cubeide_1.4.0_7511_20200720_0928_amd64.sh
 ```
 Note that `ctrl-C` will let you jump to the bottom of the licenses.
 
-When updating the IDE, it will continue to use the original install path. So rather than requiring constant path editing or full IDE reinstalls for CI script compatibility, we're using a versionless symlinked path that's also compatible with the docker image directory structure. Set up that symlink by running (substitue `1.5.1` for your particular IDE version):
+When updating the IDE, it will continue to use the original install path. So rather than requiring constant path editing or full IDE reinstalls for CI script compatibility, we're using a versionless symlinked path that's also compatible with the docker image directory structure. Set up that symlink by running (substitute `1.5.1` for your particular IDE version):
 ```
 sudo mkdir /opt/st
 sudo ln -frs ~/st/stm32cubeide_1.5.1 /opt/st/stm32cubeide
@@ -86,9 +93,10 @@ sudo apt install libncurses5
 ### Setting-up the real workspace
 
 #### Firmware linking
+
 We need to setup a symlink to the STM FW repo to ensure we all share the same absolute path to shared project assets.
 ```
-sudo ln -s ~/STM32Cube/Repository /usr/share/stm_repo
+sudo ln -s ~/STM32Cube/Repository /usr/local/share/stm_repo
 ```
 Switch your workspace to the checked-out repo.
 ```
@@ -98,9 +106,16 @@ Use the symlinked firmware location in this workspace.
 ```
 Window > Preferences > STM32Cube > Firmware Updater > Firmware Repository
 ```
-Set to `/usr/share/stm_repo`.
+Set to `/usr/local/share/stm_repo`.
+
+#### Patching FreeRTOS
+
+There was a bug in FreeRTOS message buffers that has recently been [fixed](https://github.com/FreeRTOS/FreeRTOS-Kernel/pull/264); however, this fix has not yet been incorporated into [ST's F4 firmware package](https://github.com/STMicroelectronics/STM32CubeF4). As of writing, ST's F4 firmware V1.26.1 uses FreeRTOS V10.3.1. The FreeRTOS bug affects at least V10.4.1 and below.
+
+In the meantime, the simplest solution is to overwrite `Middlewares/Third_Party/FreeRTOS/Source` with a clone of this [patched repo](https://github.com/milesfrain/stm32FreeRTOS).
 
 #### Project import
+
 Add each folder to this workspace.
 ```
 File > Open Projects from Files System
@@ -110,22 +125,6 @@ You should be able to just point to the repo directory and then un-check all non
 loopback
 ```
 Now try building and flashing each project. Sometimes you'll need to expand the project folder in order for the build hammer to work.
-
-### Debugging info
-
-When you first debug, you'll see a popup. This default configuration works fine, but if you want to see ITM traces you'll need to enable SWV:
-`Debugger > Serial Wire Viewer`, check `Enable`, set `Core Clock` to `96.0`. This needs to match `SYSCLK` in the .ioc clock configuration.
-
-If you skip this step for the first pop-up, you can find the setting later under `Run > Debug Configurations`.
-
-To view ITM traces while debugging, open `Window > Show View > SWV > SWV ITM Data Console`. Click on the wrench icon in this new terminal and check `ITM Stimulus Ports` `2` and `0`. Logs are written to port `0`, but we're using port `2` as a workaround for this issue:
-https://community.st.com/s/question/0D53W00000Hx6dxSAB/bug-itm-active-port-ter-defaults-to-port-0-enabled-when-tracing-is-disabled
-
-Then click the red circle to "Start Trace". Note that this can only be toggled when execution is paused.
-
-For FreeRTOS task monitoring, install the extension described here:
-https://blog.the78mole.de/freertos-debugging-on-stm32-cpu-usage/
-
 
 ## New STM32CubeIDE project setup
 
@@ -157,7 +156,7 @@ In the `Project Explorer`, right click on the active project and select `Convert
 Copy the `custom` directory over from the `loopback` example. Note that you'll likely need to right-click on your project in the `Project Explorer` and select `Refresh` for this new folder to appear.
 
 #### Link to common code
-In the `Project Explorer`, right click on the active project, `New > Folder > Advaced > Link to ...`, paste:
+In the `Project Explorer`, right click on the active project, `New > Folder > Advanced > Link to ...`, paste:
 ```
 WORKSPACE_LOC/common
 ```

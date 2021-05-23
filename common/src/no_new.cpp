@@ -5,7 +5,8 @@
  *   char * foo = new char[9];
  */
 
-#include "logging.h"
+#include "catch_errors.h"
+#include <stddef.h>
 
 void* operator new(size_t size)
 {

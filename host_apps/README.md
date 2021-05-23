@@ -1,0 +1,1 @@
+Applications for communicating from the host PC to the target device over a USB serial connection. See the readmes in each directory for more information on each application.

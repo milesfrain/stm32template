@@ -6,14 +6,20 @@
 
 #include "FreeRTOS.h"
 
+// Objects with this interface must implement `write`
 class Writable
 {
 public:
-  virtual size_t write(const uint8_t*, size_t, TickType_t = portMAX_DELAY) = 0;
+  // Attempt to write n bytes of data from buffer.
+  // Returns how many bytes were actually written, 0 if timeout.
+  virtual size_t write(const void* buf, size_t len, TickType_t ticks) = 0;
 };
 
+// Objects with this interface must implement `read`
 class Readable
 {
 public:
-  virtual size_t read(uint8_t*, size_t, TickType_t = portMAX_DELAY) = 0;
+  // Attempt to read n bytes of data into buffer.
+  // Returns how many bytes were actually read, 0 if timeout.
+  virtual size_t read(void* buf, size_t len, TickType_t ticks) = 0;
 };

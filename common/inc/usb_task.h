@@ -2,12 +2,11 @@
  * Wrapper for a USB instance.
  * Provides read() and write() interfaces.
  * Statically allocates two tasks and two stream buffers.
- * Todo - dedup code shared with UartTasks into a common base class.
  */
 #pragma once
 
 #include "interfaces.h"
-#include "static_rtos.h"
+#include "task_utilities.h"
 #include "usbd_cdc.h"
 #include "usbd_def.h"
 
@@ -22,13 +21,13 @@ class UsbTask
   , public Readable
 {
 public:
-  UsbTask(UBaseType_t = osPriorityNormal);
+  UsbTask(TaskUtilitiesArg& utilArg, UBaseType_t priority = osPriorityNormal);
 
   // Blocking reads and writes. Simple wrapper on xStreamBuffer API.
   // Reads are from uart rx.
   // Writes are to uart tx.
-  size_t read(uint8_t*, size_t, TickType_t = portMAX_DELAY);
-  size_t write(const uint8_t*, size_t, TickType_t = portMAX_DELAY);
+  size_t read(void* buf, size_t len, TickType_t ticks);
+  size_t write(const void* buf, size_t len, TickType_t ticks);
 
   // Hold off on the protected versions
   // These are just for situation with multiple readers / writers
@@ -40,7 +39,6 @@ public:
 
   // Looping task functions
   void txFunc();
-  void rxFunc();
 
   // Callbacks
   int8_t initCb(void);
@@ -56,14 +54,14 @@ private:
   // A struct of callbacks that are reached via usb ISRs
   USBD_CDC_ItfTypeDef callbacks;
 
-  size_t txLen;
+  size_t txLen = 0;
 
   // Size of tx and rx buffers.
   // Should be at least 2x size of largest packet.
   static constexpr size_t TSize = 2048;
 
   // Buffer for read/write interface.
-  StaticStreamBuffer<TSize> txMsgBuf;
+  StaticMessageBuffer<TSize> txMsgBuf;
   StaticStreamBuffer<TSize> rxMsgBuf;
 
   // Buffers for the USB driver
@@ -81,4 +79,12 @@ private:
   // - Create alternate locked functions, e.g. multiRead or protectedRead
   StaticMutex txMutex;
   StaticMutex rxMutex;
+
+  // Common utilities
+  TaskUtilities util;
+
+  // Counters for ITM value logging
+  uint32_t rxReceivedTotal = 0;
+  size_t txPendingTotal = 0;
+  uint32_t txTransmittedTotal = 0;
 };
