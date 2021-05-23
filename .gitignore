@@ -6,3 +6,4 @@
 .metadata
 RemoteSystemsTempFiles
 FreeRTOS_TAD_logs
+*.bin

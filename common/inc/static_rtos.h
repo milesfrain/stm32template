@@ -1,5 +1,6 @@
 /*
- * Lightweight wrappers for creating static freeRTOS objects.
+ * Wrappers for creating static freeRTOS objects and some
+ * other convenience functions.
  * Note that these don't have destructors because the intended
  * use case is to keep these alive for the lifetime of the program.
  */
@@ -7,7 +8,10 @@
 #pragma once
 
 #include "FreeRTOS.h"
+#include "catch_errors.h"
 #include "cmsis_os.h"
+#include "event_groups.h"
+#include "interfaces.h"
 #include "message_buffer.h"
 #include "queue.h"
 #include "semphr.h"
@@ -27,7 +31,7 @@
  *   Handle is retrieved via .handle
  */
 
-template<typename TArg = void, uint32_t TDepth = configMINIMAL_STACK_SIZE>
+template<typename TArg = void, uint32_t TDepth = configMINIMAL_STACK_SIZE * 2>
 class StaticTask
 {
 public:
@@ -73,9 +77,8 @@ public:
   StaticQueue()
     : handle{ xQueueCreateStatic(TLen, sizeof(T), queueBuf, &staticQ) }
   {
-    // Assign human-readable name as a debugging aid
-    // Although we don't have a good tool to look at these names, so they're useless at the moment.
-    // vQueueAddToRegistry(handle, "todoName");
+    // Todo - Assign human-readable name as a debugging aid
+    vQueueAddToRegistry(handle, "todoQueueName");
   }
   const QueueHandle_t handle; // the message buffer handle
 private:
@@ -90,31 +93,59 @@ class StaticMutex
 public:
   StaticMutex()
     : handle{ xSemaphoreCreateMutexStatic(&staticSemaphore) }
-  {}                              // No body in constructor
+  {
+    // Todo - Assign human-readable name as a debugging aid
+    vQueueAddToRegistry(handle, "todoMutexName");
+  }
   const SemaphoreHandle_t handle; // the mutex / semaphore handle
 private:
   StaticSemaphore_t staticSemaphore; // static storage for mutex / semaphore
 };
 
 // Enables scoped locking (i.e. never forgetting to unlock a mutex).
+// May provide non-maximum timeout and then call gotLock() to check if
+// lock was successfully acquired.
 // Note - create recursive and from-isr versions as needed
 class ScopedLock
 {
 public:
-  ScopedLock(SemaphoreHandle_t m)
-    : mutex{ m }
+  // Blocks forever while waiting for mutex
+  ScopedLock(StaticMutex& mutex, TickType_t ticks = portMAX_DELAY)
+    : mutex{ mutex }
   {
-    xSemaphoreTake(mutex, portMAX_DELAY);
+    locked = xSemaphoreTake(mutex.handle, ticks);
   }
-  ~ScopedLock() { xSemaphoreGive(mutex); }
+
+  ~ScopedLock()
+  {
+    if (locked) {
+      xSemaphoreGive(mutex.handle);
+    }
+  }
+
+  bool gotLock() { return locked; }
 
 private:
-  SemaphoreHandle_t mutex;
+  StaticMutex& mutex;
+  bool locked;
 };
 
 // ------- Chapter 5: Timer -----------
 
-// ------- Chapter 6: Event -----------
+// ------- Chapter 6: Event Groups -----------
+
+class StaticEventGroup
+{
+public:
+  StaticEventGroup()
+    : handle{ xEventGroupCreateStatic(&staticEventGroup) }
+  {}
+
+  const EventGroupHandle_t handle;
+
+private:
+  StaticEventGroup_t staticEventGroup;
+};
 
 // ------- Chapter 7: Kernel config - skip -----------
 
@@ -122,6 +153,8 @@ private:
 
 template<size_t TSize = 1024>
 class StaticStreamBuffer
+  : public Readable
+  , public Writable
 {
 public:
   StaticStreamBuffer()
@@ -129,8 +162,20 @@ public:
                                         1, // trigger level. Unblock as soon as any bytes are available
                                         mbStorage,
                                         &staticMb) }
-  {}                                 // No body in constructor
+  {} // No body in constructor
+
+  size_t write(const void* buf, size_t len, TickType_t ticks) //
+  {
+    return xStreamBufferSend(handle, buf, len, ticks);
+  }
+
+  size_t read(void* buf, size_t len, TickType_t ticks) //
+  {
+    return xStreamBufferReceive(handle, buf, len, ticks);
+  }
+
   const StreamBufferHandle_t handle; // the message buffer handle
+
 private:
   uint8_t mbStorage[TSize + 1];  // storage for message buffer, must contain an additional byte
   StaticStreamBuffer_t staticMb; // static storage for bookkeeping data
@@ -140,12 +185,41 @@ private:
 
 template<size_t TSize = 1024>
 class StaticMessageBuffer
+  : public Readable
+  , public Writable
 {
 public:
   StaticMessageBuffer()
     : handle{ xMessageBufferCreateStatic(TSize, mbStorage, &staticMb) }
-  {}                                  // No body in constructor
+  {} // No body in constructor
+
+  size_t write(const void* buf, size_t len, TickType_t ticks) //
+  {
+    return xMessageBufferSend(handle, buf, len, ticks);
+  }
+
+  size_t read(void* buf, size_t len, TickType_t ticks)
+  {
+
+    // Attempt to get next message
+    size_t retLen = xMessageBufferReceive(handle, buf, len, ticks);
+
+    // Check if zero returned because next message is too big to fit in buffer
+    size_t nextLen = nextLengthBytes();
+    if (retLen == 0 && len < nextLen) {
+      critical();
+    }
+
+    return retLen;
+  }
+
+  size_t nextLengthBytes() //
+  {
+    return xMessageBufferNextLengthBytes(handle);
+  }
+
   const MessageBufferHandle_t handle; // the message buffer handle
+
 private:
   uint8_t mbStorage[TSize + 1];   // storage for message buffer, must contain an additional byte
   StaticMessageBuffer_t staticMb; // static storage for bookkeeping data

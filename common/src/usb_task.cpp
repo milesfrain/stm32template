@@ -6,9 +6,9 @@
  */
 
 #include "usb_task.h"
-#include "basic.h"
-#include "logging.h"
-#include "usbd_cdc.h"
+#include "board_defs.h"
+#include "catch_errors.h"
+#include "itm_logging.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
 
@@ -30,6 +30,8 @@ int8_t controlWrap(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   return singleton->controlCb(cmd, pbuf, length);
 }
 // Assuming the pointer to len is to allow us to do a partial read.
+// Upon further review, the length pointer appears to be bad API design.
+// So we should just treat it as a read-only value.
 int8_t receiveWrap(uint8_t* buf, uint32_t* len)
 {
   return singleton->receiveCb(buf, len);
@@ -47,18 +49,16 @@ void txFuncWrapper(UsbTask* p)
 {
   p->txFunc();
 }
-void rxFuncWrapper(UsbTask* p)
-{
-  p->rxFunc();
-}
 
 // ------- API ---------
 
 // Constructor
-UsbTask::UsbTask(UBaseType_t priority)
+UsbTask::UsbTask( //
+  TaskUtilitiesArg& utilArg,
+  UBaseType_t priority)
   : txTask{ "usb_tx", txFuncWrapper, this, priority }
   , callbacks{ initWrap, deInitWrap, controlWrap, receiveWrap, transmitCpltWrap }
-  , txLen{ 0 }
+  , util{ utilArg }
 {
   if (singleton != nullptr) {
     error("UsbTask singleton already created");
@@ -83,53 +83,84 @@ UsbTask::UsbTask(UBaseType_t priority)
 
 // Blocking read and write
 
-size_t UsbTask::read(uint8_t* buf, size_t len, TickType_t ticks)
+size_t UsbTask::read(void* buf, size_t len, TickType_t ticks)
 {
-  return xStreamBufferReceive(rxMsgBuf.handle, buf, len, ticks);
+  return rxMsgBuf.read(buf, len, ticks);
 }
 
-size_t UsbTask::write(const uint8_t* buf, size_t len, TickType_t ticks)
+size_t UsbTask::write(const void* buf, size_t len, TickType_t ticks)
 {
-  return xStreamBufferSend(txMsgBuf.handle, buf, len, ticks);
+  return txMsgBuf.write(buf, len, ticks);
 }
 
 // ---------- Internal details -------------
 
 void UsbTask::txFunc()
 {
+  util.watchdogRegisterTask();
+
   while (1) {
+
+    util.watchdogKick();
+
     // Wait until new data to send is available on buffer
-    txLen = xStreamBufferReceive(txMsgBuf.handle, txBuf, sizeof(txBuf), portMAX_DELAY);
+    txLen = util.readAll(txMsgBuf, txBuf, sizeof(txBuf));
+
+    // Don't attempt to transmit if there's no data to transmit
+    if (!txLen) {
+      continue;
+    }
+
+    // Don't attempt to transmit if we haven't received any RX data yet.
+    if (!rxReceivedTotal) {
+      util.logln( //
+        "%s skipping transmit because no link detected (would block forever otherwise)",
+        pcTaskGetName(txTask.handle));
+      continue;
+    }
 
     // Check if transfer is still in-progress
-    if (((USBD_CDC_HandleTypeDef*)(usbDeviceHandle.pClassData))->TxState != 0) {
+    while (((USBD_CDC_HandleTypeDef*)(usbDeviceHandle.pClassData))->TxState != 0) {
       // USB busy - this should not happen if notifications are setup correctly
       error("USB unexpectedly busy");
+      // util.warnln("USB unexpectedly busy");
+      // osDelay(1);
     }
 
     // Setup transmit
     USBD_CDC_SetTxBuffer(&usbDeviceHandle, txBuf, txLen);
-    uint8_t result = USBD_CDC_TransmitPacket(&usbDeviceHandle);
-    static LogMsg msg;
-    if (result != USBD_OK) {
-      do {
-        // report error
-        itmPrintf(msg, "USB failed to transmit %d\r\n", result);
-        osDelay(1);
-        // try again
-        result = USBD_CDC_TransmitPacket(&usbDeviceHandle);
-      } while (result != USBD_OK);
-      // report success
-      itmPrintf(msg, "USB finally succeeded\r\n");
+
+    // USBD_CDC_TransmitPacket just starts the transmit.
+    // We need to then wait for transmitCpltCb callback to be called,
+    // which then notifies this task that the transmit has completed.
+    uint8_t txResult;
+    while ((txResult = USBD_CDC_TransmitPacket(&usbDeviceHandle)) != USBD_OK) {
+      // report error
+      util.warnln("USB failed to initiate transmit %d", txResult);
+      osDelay(1);
     }
+
+    // Log pending bytes counter via ITM
+    txPendingTotal += txLen;
+    itmSendValue(ItmPort::UsbBytesOutPending, txPendingTotal);
 
     // Wait until transfer is complete.
     // Will be signaled from transmitCpltCb ISR.
-    // Clear notification value upon receipt and block forever.
-    uint32_t bytesSent = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-    if (bytesSent != txLen) {
-      itmPrintf(msg, "Only sent %d of %d bytes\r\n", bytesSent, txLen);
+    // Clear notification value upon receipt.
+    // Timeout occasionally for easier detection of this stall
+    // location during debugging.
+    uint32_t bytesSent;
+    while (!(bytesSent = ulTaskNotifyTake(pdTRUE, suggestedTimeoutTicks))) {
+      util.watchdogKick();
+      timeout();
     }
+    if (bytesSent != txLen) {
+      util.warnln("Only sent %d of %d bytes", bytesSent, txLen);
+    }
+
+    // Log transmitted bytes counter via ITM
+    txTransmittedTotal += bytesSent;
+    itmSendValue(ItmPort::UsbBytesOutTransmitted, txTransmittedTotal);
   }
 }
 
@@ -171,6 +202,7 @@ int8_t UsbTask::controlCb(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   return USBD_OK;
 }
 
+// Note these comments are from the autogenerated templates, so not super clear.
 /**
  * @brief  Data received over USB OUT endpoint are sent over CDC interface
  *         through this function.
@@ -188,39 +220,71 @@ int8_t UsbTask::controlCb(uint8_t cmd, uint8_t* pbuf, uint16_t length)
  */
 int8_t UsbTask::receiveCb(uint8_t* buf, uint32_t* len)
 {
+  UsbRxPinHigh();
+
   // Performing a copy in here is somewhat sub-optimal for an ISR.
   // We could do ping-pong buffers (or similar for improved performance).
   // Made this a lower priority (higher number) ISR to compensate.
 
-  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  // Also, logging to ITM has potential to block, but shouldn't,
+  // unless this same callback happened within 10uS (unlikely).
+  // Todo - should still move this to tx task once that becomes
+  // non-blocking with watchdog additions.
+
+  // Log received bytes counter via ITM
+  rxReceivedTotal += *len;
+  itmSendValue(ItmPort::UsbBytesIn, rxReceivedTotal);
 
   // Check how much data we can copy into the stream buffer
   size_t spaces = xStreamBufferSpacesAvailable(rxMsgBuf.handle);
   if (spaces == 0) {
-    // no space, do nothing
-  } else if (spaces < *len) {
-    // not enough space, but copy as much as we can
-    xStreamBufferSendFromISR(rxMsgBuf.handle, buf, spaces, &xHigherPriorityTaskWoken);
-    // Shift out transfered bytes
-    *len -= spaces;
-    memmove(buf, buf + spaces, *len);
-    USBD_CDC_SetRxBuffer(&usbDeviceHandle, buf + *len);
-    USBD_CDC_ReceivePacket(&usbDeviceHandle);
+    // No space. Do nothing and allow data to drop.
+    // Note that USBD_CDC_ReceivePacket must still be called,
+    // otherwise incoming USB data will be blocked after 16 drops
+    // stall all endpoints.
+    // nonCritical();
   } else {
-    // plenty of space, copy all of it
-    xStreamBufferSendFromISR(rxMsgBuf.handle, buf, *len, &xHigherPriorityTaskWoken);
-    *len = 0;
-    // Request next packet
-    USBD_CDC_SetRxBuffer(&usbDeviceHandle, buf);
-    USBD_CDC_ReceivePacket(&usbDeviceHandle);
+    // Space available
+
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+    if (spaces < *len) {
+      // Not enough space, but copy as much as we can.
+      // Going to lose some data, but not as bad as locking-up system.
+      xStreamBufferSendFromISR(rxMsgBuf.handle, buf, spaces, &xHigherPriorityTaskWoken);
+
+      // May achieve better packet parsing performance (and overall higher data rates)
+      // by eliminating the above line to avoid writing packet fragments that will
+      // definitely fail parsing. Downside of no partial write is that we could
+      // miss out on any whole packets contained within the partial write.
+
+      // nonCritical();
+    } else {
+// plenty of space, copy all of it
+#if 1
+      xStreamBufferSendFromISR(rxMsgBuf.handle, buf, *len, &xHigherPriorityTaskWoken);
+#else
+      // artificial data loss - occasionally drop the last few bytes
+      static uint32_t ndrop = 0;
+      ndrop++;
+      ndrop %= 4;
+      xStreamBufferSendFromISR(rxMsgBuf.handle, buf, *len - ndrop, &xHigherPriorityTaskWoken);
+#endif
+    }
+
+    // If another task was waiting on data, then trigger context switch
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
   }
 
-  // If another task was waiting on data, then trigger context switch
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  // Request next packet.
+  USBD_CDC_ReceivePacket(&usbDeviceHandle);
+
+  UsbRxPinLow();
 
   return USBD_OK;
 }
 
+// Note these comments are from the autogenerated templates, so not super clear.
 /**
  * @brief  CDC_TransmitCplt_FS
  *         Data transmited callback
@@ -237,6 +301,7 @@ int8_t UsbTask::receiveCb(uint8_t* buf, uint32_t* len)
 
 int8_t UsbTask::transmitCpltCb(uint8_t* buf, uint32_t* len, uint8_t epnum)
 {
+  // We don't care about endpoint number
   UNUSED(epnum);
 
   // USB library API questions:
@@ -246,10 +311,14 @@ int8_t UsbTask::transmitCpltCb(uint8_t* buf, uint32_t* len, uint8_t epnum)
   // Check how much data we were able to transmit
   if (*len == txLen) {
     // We were able to transmit everything.
+  } else if (*len == 0) {
+    // Zero bytes - shouldn't happen
+    critical();
   } else {
     // We couldn't transmit everything.
     // This sometimes happens.
     // More investigation into USB library required.
+    // This is reported in txFunc (assuming the notifiy is correctly picked-up).
   }
   // Always notify, even for failures.
   // Send length for comparison and logging this issue outside of ISR.

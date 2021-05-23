@@ -2,11 +2,12 @@
 
 A collection of loopback tests to ensure we can achieve maximum data rates over USB and any number of UART peripherals with zero packet loss and low CPU usage.
 
-Enable a particular test by uncommenting one of the following in [`main.cpp`](custom/src/main.cpp):
+Enable a particular test by uncommenting one of the following in `loopback/custom/src/mainCpp.cpp`:
 ```cpp
 //#define TEST_UART_THROUGHPUT
 //#define TEST_USB_IO
 //#define TEST_USB_LOOPBACK
+//#define TEST_USB_PACKET_PARSING
 //#define TEST_USB_SINGLE_UART_LOOPBACK
 //#define TEST_USB_ALL_UART_LOOPBACK
 ```
@@ -16,9 +17,15 @@ Enable a particular test by uncommenting one of the following in [`main.cpp`](cu
 Configures a producer / consumer pair of tasks for each UART.
 The producers generate packets.
 The consumers parse packets and print diagnostic info (losses, etc.) to ITM logs.
-This assumes all UARTs are hardwired as loopback, but it's also okay to hardwire different UARTs to each other.
+This assumes all UARTs are hardwired as loopback, but it's also okay to hardwire different UARTs to each other (see [TEST_USB_ALL_UART_LOOPBACK](#TEST_USB_ALL_UART_LOOPBACK) for an example of cross-wiring).
 
-<img src="https://user-images.githubusercontent.com/3578681/93276170-ba78cc80-f773-11ea-9d5c-9c9e9544151c.png" width="400">
+<img src="../docs/images/test_uart_throughput.png" width="400">
+
+The above diagram may also be represented from an interfaces perspective:
+
+<img src="../docs/images/test_uart_throughput-iface.png" width="300">
+
+The following diagrams will show both representations.
 
 #### TEST_USB_IO
 
@@ -26,7 +33,7 @@ Tests usb input / output.
 The producer task outputs periodic messages that you can inspect on your PC's serial monitor.
 The consumer task prints any messages sent to the uC in the ITM log (as hex).
 
-<img src="https://user-images.githubusercontent.com/3578681/96794492-2b368880-13b3-11eb-8463-8980e598c6c9.png" width="200">
+<img src="../docs/images/test_usb_io.png" width="250">
 
 #### TEST_USB_LOOPBACK
 
@@ -34,13 +41,25 @@ Test internal USB loopback.
 Anything written to usb will be echoed back.
 Can reach 300 KBps (25x faster than 115200 UART baud rate), but USB task will then consume 70% CPU.
 
-<img src="https://user-images.githubusercontent.com/3578681/96794962-17d7ed00-13b4-11eb-907c-0fbc18d2466f.png" width="200">
+<img src="../docs/images/test_usb_loopback.png" width="250">
+
+#### TEST_USB_PACKET_PARSING
+
+Tests binary packet parsing and repacking over USB.
+
+Use either of these apps to generate valid packets:
+- [throughput](../testApps/throughput)
+- [commander](../testApps/commander)
+
+You may also just send random data over a serial connection (e.g. `minicom`, `putty`, `screen`, etc.), and watch the ITM logs for parsing errors.
+
+<img src="../docs/images/test_usb_packet_parsing.png" width="400">
 
 #### TEST_USB_SINGLE_UART_LOOPBACK
 
 Pass USB data through UART. This assumes UART 5 is hardwired to itself.
 
-<img src="https://user-images.githubusercontent.com/3578681/96795087-3807ac00-13b4-11eb-9771-ba49c79486ba.png" width="400">
+<img src="../docs/images/test_usb_single_uart_loopback.png" width="400">
 
 #### TEST_USB_ALL_UART_LOOPBACK
 
@@ -52,10 +71,10 @@ This assumes the following hardwired connections:
 
 At theoretical maximum of 11.52 KBps (@ 115200 baud with start and stop bits), consumes less than 8% of available CPU across 15 tasks.
 
-<img src="https://user-images.githubusercontent.com/3578681/96795873-65545a00-13b4-11eb-9d3a-4d3acce4148a.png" width="400">
-<img src="https://user-images.githubusercontent.com/3578681/96798351-92553c80-13b5-11eb-8d7b-487ac581d638.png" width="600">
+<img src="../docs/images/test_usb_all_uart_loopback.png" width="400">
+<img src="../docs/images/test_usb_all_uart_loopback-tasks.png" width="600">
 
-Corresponding output from [USB packet generator test app](../testApps/linux_serial):
+Corresponding output from [USB packet generator test app](../testApps/throughput):
 ```
 Sent 8065 packets
 Got 8032 packets (last id 8031). Dropped 0. Pending 34. Bps total 11474, in interval 10400

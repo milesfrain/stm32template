@@ -1,2 +1,3 @@
 common/tests
 loopback/custom/tests
+vfd_bench/custom/tests

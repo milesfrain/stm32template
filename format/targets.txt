@@ -1,3 +1,4 @@
 common
 loopback/custom
-testApps/linux_serial
+vfd_bench/custom
+host_apps

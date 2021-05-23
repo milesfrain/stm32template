@@ -168,7 +168,7 @@ void DMA1_Stream0_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream0_IRQn 0 */
 
-  handleDmaInterrupt(dmaCh1, dmaStream0);
+  handleDmaInterrupt(dma1, dmaStream0);
 
   /* USER CODE END DMA1_Stream0_IRQn 0 */
 
@@ -184,7 +184,7 @@ void DMA1_Stream1_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream1_IRQn 0 */
 
-  handleDmaInterrupt(dmaCh1, dmaStream1);
+  handleDmaInterrupt(dma1, dmaStream1);
 
   /* USER CODE END DMA1_Stream1_IRQn 0 */
 
@@ -200,7 +200,7 @@ void DMA1_Stream2_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream2_IRQn 0 */
 
-  handleDmaInterrupt(dmaCh1, dmaStream2);
+  handleDmaInterrupt(dma1, dmaStream2);
 
   /* USER CODE END DMA1_Stream2_IRQn 0 */
 
@@ -216,7 +216,7 @@ void DMA1_Stream3_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream3_IRQn 0 */
 
-  handleDmaInterrupt(dmaCh1, dmaStream3);
+  handleDmaInterrupt(dma1, dmaStream3);
 
   /* USER CODE END DMA1_Stream3_IRQn 0 */
 
@@ -232,7 +232,7 @@ void DMA1_Stream4_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream4_IRQn 0 */
 
-  handleDmaInterrupt(dmaCh1, dmaStream4);
+  handleDmaInterrupt(dma1, dmaStream4);
 
   /* USER CODE END DMA1_Stream4_IRQn 0 */
 
@@ -278,7 +278,7 @@ void DMA1_Stream7_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream7_IRQn 0 */
 
-  handleDmaInterrupt(dmaCh1, dmaStream7);
+  handleDmaInterrupt(dma1, dmaStream7);
 
   /* USER CODE END DMA1_Stream7_IRQn 0 */
 
@@ -324,7 +324,7 @@ void DMA2_Stream0_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
 
-  handleDmaInterrupt(dmaCh2, dmaStream0);
+  handleDmaInterrupt(dma2, dmaStream0);
 
   /* USER CODE END DMA2_Stream0_IRQn 0 */
 
@@ -354,7 +354,7 @@ void DMA2_Stream7_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream7_IRQn 0 */
 
-  handleDmaInterrupt(dmaCh2, dmaStream7);
+  handleDmaInterrupt(dma2, dmaStream7);
 
   /* USER CODE END DMA2_Stream7_IRQn 0 */
 

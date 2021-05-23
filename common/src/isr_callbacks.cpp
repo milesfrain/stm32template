@@ -47,17 +47,17 @@ void handleInterrupt(CallbackData& cb)
 
 // -------- DMA specific ---------
 
-CallbackData dmaCallbacks[numDmaCh][numDmaStream];
+CallbackData dmaCallbacks[numDmaInstance][numDmaStream];
 
-void registerDmaCallback(DmaCh ch, DmaStream stream, IsrCallbackFunc f, void* arg)
+void registerDmaCallback(DmaInstance inst, DmaStream stream, IsrCallbackFunc f, void* arg)
 {
-  CallbackData& cb = dmaCallbacks[ch][stream];
+  CallbackData& cb = dmaCallbacks[inst][stream];
   registerCallback(cb, f, arg);
 }
 
-extern "C" void handleDmaInterrupt(enum DmaCh ch, enum DmaStream stream)
+extern "C" void handleDmaInterrupt(enum DmaInstance inst, enum DmaStream stream)
 {
-  CallbackData& cb = dmaCallbacks[ch][stream];
+  CallbackData& cb = dmaCallbacks[inst][stream];
   handleInterrupt(cb);
 }
 

@@ -14,7 +14,7 @@ extern "C"
 
   // Handle an interrupt for a given DMA channel and stream
   // by calling the function that was registered in registerDmaCallback().
-  void handleDmaInterrupt(enum DmaCh, enum DmaStream);
+  void handleDmaInterrupt(enum DmaInstance, enum DmaStream);
 
   // Same as above, but for uart.
   void handleUartInterrupt(enum Uart);
@@ -36,7 +36,7 @@ typedef void (*IsrCallbackFunc)(void*);
 // Then invoke this callback with handleDmaInterrupt. It will
 // call the previously registered function as:
 // f(arg);
-void registerDmaCallback(enum DmaCh, enum DmaStream, IsrCallbackFunc, void*);
+void registerDmaCallback(enum DmaInstance, enum DmaStream, IsrCallbackFunc, void*);
 
 // Same as above, but for uart.
 void registerUartCallback(enum Uart, IsrCallbackFunc, void*);
