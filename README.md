@@ -1,8 +1,10 @@
 ## Overview
 
 This repo demonstrates a strategy for working with STM32CubeIDE-based projects. It preserves ST's .ioc workflow with autogeneration and easy pin reconfiguration in a git-friendly way, and also showcases:
-- C++ used appropriately in a constrained embedded environment (no dynamic allocations - see [no_new.cpp](common/src/no_new.cpp)).
+
+- High-performance LL-DMA UART and USB peripheral abstractions (see the [loopback](loopback) project)
 - Convenience wrappers for static allocation of FreeRTOS components (see [static_rtos.h](common/inc/static_rtos.h))
+- C++ used appropriately in a constrained embedded environment (no dynamic allocations - see [no_new.cpp](common/src/no_new.cpp)).
 - Code deduplication:
   - Linking to versioned vendor firmware
   - Common code shared across projects
@@ -11,7 +13,6 @@ This repo demonstrates a strategy for working with STM32CubeIDE-based projects. 
 - Autoformatting with [clang-format](https://clang.llvm.org/docs/ClangFormat.html)
 - ITM debug logging
 - FreeRTOS task profiling
-- High-performance UART and USB peripheral abstractions (see the [loopback](loopback) project)
 
 CI checks on each pull request ensure that all projects compile, pass unit tests, and are formatted correctly. Here are example PRs demonstrating:
 - [Broken build](https://github.com/milesfrain/stm32template/pull/2)
