@@ -48,8 +48,8 @@ Can reach 300 KBps (25x faster than 115200 UART baud rate), but USB task will th
 Tests binary packet parsing and repacking over USB.
 
 Use either of these apps to generate valid packets:
-- [throughput](../testApps/throughput)
-- [commander](../testApps/commander)
+- [throughput](../host_apps/throughput)
+- [commander](../host_apps/commander)
 
 You may also just send random data over a serial connection (e.g. `minicom`, `putty`, `screen`, etc.), and watch the ITM logs for parsing errors.
 
@@ -74,7 +74,7 @@ At theoretical maximum of 11.52 KBps (@ 115200 baud with start and stop bits), c
 <img src="../docs/images/test_usb_all_uart_loopback.png" width="400">
 <img src="../docs/images/test_usb_all_uart_loopback-tasks.png" width="600">
 
-Corresponding output from [USB packet generator test app](../testApps/throughput):
+Corresponding output from [USB packet generator test app](../host_apps/throughput):
 ```
 Sent 8065 packets
 Got 8032 packets (last id 8031). Dropped 0. Pending 34. Bps total 11474, in interval 10400
